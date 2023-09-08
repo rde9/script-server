@@ -209,6 +209,8 @@ class ConfigModel:
 
         self.output_files = config.get('output_files', [])
 
+        self.next_execution_time = config.get('next_execution_time')
+
         scheduling_config = config.get('scheduling')
         if scheduling_config:
             self.schedulable = read_bool_from_config('enabled', scheduling_config, default=False)

@@ -1,6 +1,8 @@
 import json
 import logging
 import os
+import random
+from datetime import timedelta, timezone
 
 from auth.user import User
 from config.config_service import ConfigService
@@ -118,13 +120,30 @@ class ScheduleService:
             return                
         
         next_datetime = schedule.get_next_time()
+        # range: 0-2 days, 0-18 hours, 0-59 minutes, 0-59 seconds
+        random_delay = timedelta(days=random.randint(0, 2), hours=random.randint(
+            0, 18), minutes=random.randint(0, 59), seconds=random.randint(0, 59))
+        next_datetime += random_delay
+
+        BJT = timezone(timedelta(hours=8))
+
+        # update conf/runners/<job.script_name>.json
+        runner_config_path = os.path.join('conf', 'runners', job.script_name + '.json')
+        with open(runner_config_path, 'r') as file:
+            runner_config = json.load(file)
+
+        runner_config["next_execution_time"] = next_datetime.astimezone(BJT).strftime('%H:%M:%S, %d %B %Y')
+
+        with open(runner_config_path, 'w') as file:
+            json.dump(runner_config, file, indent=2)
+
 
         if schedule.end_option == 'end_datetime':
             if next_datetime > schedule.end_arg:
                 return
         
         LOGGER.info(
-            'Scheduling ' + job.get_log_name() + ' at ' + next_datetime.astimezone(tz=None).strftime('%H:%M, %d %B %Y'))
+            'Scheduling ' + job.get_log_name() + ' at ' + next_datetime.astimezone(tz=BJT).strftime('%H:%M, %d %B %Y'))
 
         self.scheduler.schedule(next_datetime, self._execute_job, (job, job_path))
 

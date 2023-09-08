@@ -25,6 +25,7 @@ def config_to_external(config, id, external_id=None):
         'name': config.name,
         'description': config.description,
         'schedulable': config.schedulable,
+        'nextExecutionTime': config.next_execution_time,
         'parameters': parameters,
         'outputFormat': config.output_format
     }

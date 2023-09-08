@@ -2,6 +2,7 @@
   <div :id="id" class="script-view">
     <ScriptLoadingText v-if="loading && !scriptConfig" :loading="loading" :script="selectedScript"/>
     <p v-show="scriptDescription" class="script-description" v-html="formattedDescription"/>
+    <p v-show="nextExecutionTime" class="script-description" v-html="formattedNextExecutionTime"/>
     <ScriptParametersView ref="parametersView"/>
     <div class="actions-panel">
       <button :disabled="!enableExecuteButton || scheduleMode"
@@ -102,7 +103,9 @@ export default {
   computed: {
     ...mapState('scriptConfig', {
       scriptDescription: state => state.scriptConfig ? state.scriptConfig.description : '',
+      id: state => state.scriptConfig ? state.scriptConfig.id : '',
       loading: 'loading',
+      nextExecutionTime: state => state.scriptConfig ? state.scriptConfig.nextExecutionTime : null,
       scriptConfig: 'scriptConfig',
       outputFormat: state => state.scriptConfig ? state.scriptConfig.outputFormat : undefined,
       preloadOutput: state => state.preloadScript?.['output'],
@@ -143,6 +146,14 @@ export default {
       }
 
       return paragraphRemoval.innerHTML;
+    },
+
+    formattedNextExecutionTime: function () {
+      if (isNull(this.nextExecutionTime)) {
+        return '';
+      }
+
+      return 'Next execution time: ' + this.nextExecutionTime;
     },
 
     enableExecuteButton() {
